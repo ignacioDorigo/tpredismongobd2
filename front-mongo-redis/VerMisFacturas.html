@@ -69,7 +69,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: .3s ease-in-out;
         }
-        .card:hover{
+        .card:hover {
             scale: 1.02;
         }
 
@@ -83,18 +83,21 @@
             display: none; /* Detalles ocultos inicialmente */
         }
 
-        .detalle-producto{
+        .detalle-producto {
             border: 2px solid #ccc;
             margin-top: 5px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: .3s ease-in-out;
+            display: flex;
+
+            
         }
 
-        .detalle-producto:hover{
+        .detalle-producto:hover {
             scale: 1.02;
         }
-        #botoncito{
+        #botoncito {
             color: white;
             background-color: #037bff;
             width: 10%;
@@ -105,6 +108,15 @@
             border: 2px solid #ffffff;
         }
 
+        .detalle-producto img {
+            max-width: 100px;
+            max-height: 100px;
+            margin-right: 10px;
+            border-radius: 5px;
+
+        }
+            
+        
     </style>
 </head>
 <body>
@@ -152,10 +164,16 @@
                             <div class="detalles">
                                 ${factura.carritoCliente.detalles.map(detalle => `
                                     <div class="detalle-producto">
-                                        <p><strong>Producto:</strong> ${detalle.producto.nombre}</p>
-                                        <p><strong>Cantidad:</strong> ${detalle.cantidad}</p>
-                                        <p><strong>Precio: $</strong> ${detalle.producto.precio}</p>
-                                        <p><strong>Subtotal: $</strong> ${detalle.producto.precio * detalle.cantidad}</p>
+                                        <div class="div-producto-imagen">
+                                            <img src="${detalle.producto.imagen}" alt="Imagen de ${detalle.producto.nombre}">
+                                        </div>
+                                    
+                                        <div class="div-producto-detalle">
+                                            <p><strong>Producto:</strong> ${detalle.producto.nombre}</p>
+                                            <p><strong>Cantidad:</strong> ${detalle.cantidad}</p>
+                                            <p><strong>Precio: $</strong> ${detalle.producto.precio}</p>
+                                            <p><strong>Subtotal: $</strong> ${detalle.producto.precio * detalle.cantidad}</p>
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
