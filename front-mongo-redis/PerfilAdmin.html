@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0; /* Elimina el margen por defecto del body */
+            padding: 0; /* Elimina el padding por defecto del body */
+            background-color: #ffffff; /* Color de fondo */
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 200px;
+            background-color: #037bff; /* Color de fondo de la barra lateral */
+            color: #fff; /* Color del texto en la barra lateral */
+            padding-top: 40px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            align-items: stretch; /* Hace que los enlaces ocupen todo el ancho disponible */
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 20px; /* Padding para los enlaces */
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            transition: background-color 0.3s ease; /* Transición suave de color de fondo */
+            width: 100%; /* Ancho completo del contenedor */
+            box-sizing: border-box; /* Incluye el padding dentro del ancho total */
+        }
+
+        .sidebar a:hover {
+            background-color: #0358a7; /* Color de fondo al pasar el ratón */
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .content h2 {
+            color: #333; /* Color del título */
+            border-bottom: 2px solid #ccc; /* Línea divisoria bajo el título */
+            padding-bottom: 10px;
+        }
+
+        .content p {
+            color: #000000; /* Color del texto */
+            margin-bottom: 10px;
+        }
+
+        #adminInfo {
+            color: #444; /* Color del texto de información adicional */
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        #adminInfo p {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        
+        <a href="PerfilAdmin.html?mail=${encodeURIComponent(mail)}" id="perfilLink">Perfil</a>
+        <a href="CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}" id="cambiarContraseniaLink">Cambiar Contraseña</a>
+        <a href="VerProductos.html?mail=${encodeURIComponent(mail)}" id="verProductosLink">Ver Productos</a>
+        <a href="AgregarProducto.html?mail=${encodeURIComponent(mail)}" id="agregarProductoLink">Agregar Producto</a>
+        <a href="Clientes.html?mail=${encodeURIComponent(mail)}" id="clientesLink">Clientes</a>
+        <a href="Facturas.html?mail=${encodeURIComponent(mail)}" id="facturasLink">Facturas</a>
+        <a href="Index.html" id="cerrarSesionLink">Cerrar Sesión</a>
+        
+    </div>
+
+    <div class="content">
+        <h2>Perfil de Administrador</h2>
+        
+        <div id="adminInfo">
+            <p><strong> Email: </strong> <span id="email"></span></p>
+            <p><strong>Nombre:</strong> <span id="nombre"></span></p>
+            <p><strong>Apellido:</strong> <span id="apellido"></span></p>
+            <p><strong>Documento:</strong> <span id="documento"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Obtener el parámetro 'mail' de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const mail = urlParams.get('mail');
+        console.log("email: ",mail);
+
+        // Mostrar el mail en el span con id 'email'
+        document.getElementById('email').textContent = mail;
+
+        // Función para obtener y mostrar los datos del administrador
+        function obtenerDatosAdmin() {
+            fetch(`http://localhost:8080/tpo/perfilAdmin?mail=${encodeURIComponent(mail)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Mostrar los datos del administrador en la página
+                    document.getElementById('nombre').textContent = data.nombre;
+                    document.getElementById('apellido').textContent = data.apellido;
+                    document.getElementById('documento').textContent = data.documento;
+                })
+                .catch(error => {
+                    console.error('Error al obtener datos del administrador:', error);
+                    alert('Error al obtener datos del administrador. Por favor, inténtelo nuevamente.');
+                });
+        }
+
+        // Llamar a la función para obtener los datos del administrador al cargar la página
+        obtenerDatosAdmin();
+
+        document.getElementById('perfilLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `PerfilAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cambiarContraseniaLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('verProductosLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerProductos.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('agregarProductoLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `AgregarProducto.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('clientesLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Clientes.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('facturasLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Facturas.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cerrarSesionLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Index.html`;
+        });
+
+    </script>
+</body>
+</html>

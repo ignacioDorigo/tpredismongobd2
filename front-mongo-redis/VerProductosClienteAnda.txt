@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Productos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0; /* Elimina el margen por defecto del body */
+            padding: 0; /* Elimina el padding por defecto del body */
+            background-color: #ffffff; /* Color de fondo */
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 200px;
+            background-color: #037bff; /* Color de fondo de la barra lateral */
+            color: #fff; /* Color del texto en la barra lateral */
+            padding-top: 40px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            align-items: stretch; /* Hace que los enlaces ocupen todo el ancho disponible */
+            position: fixed; /* Fija la barra lateral */
+            top: 0; /* La fija en la parte superior */
+            left: 0; /* Alinea a la izquierda */
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 20px; /* Padding para los enlaces */
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            transition: background-color 0.3s ease; /* Transición suave de color de fondo */
+            width: 100%; /* Ancho completo del contenedor */
+            box-sizing: border-box; /* Incluye el padding dentro del ancho total */
+        }
+
+        .sidebar a:hover {
+            background-color: #0358a7; /* Color de fondo al pasar el ratón */
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            margin-left: 200px; /* Ajusta el margen izquierdo para evitar solapamientos con la sidebar fija */
+            overflow-y: auto; /* Permite el scroll vertical en la zona de contenido */
+        }
+
+        .content h2 {
+            color: #333; /* Color del título */
+            border-bottom: 2px solid #ccc; /* Línea divisoria bajo el título */
+            padding-bottom: 10px;
+        }
+
+        .content p {
+            color: #000000; /* Color del texto */
+            margin-bottom: 10px;
+        }
+
+        .producto {
+            width: 100%; /* Ancho máximo del contenedor */
+            max-width: 350px; /* Ancho máximo del producto */
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: .3s ease-in-out;
+            cursor: pointer;
+        }
+        .producto:hover{
+            scale: 1.04;
+        }
+
+        .producto img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        #productosList{
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        
+         <!-- Enlace para PerfilAdmin.html -->
+         <a href="PerfilAdmin.html?mail=${encodeURIComponent(mail)}" id="perfilLink">Perfil</a>
+        
+         <!-- Enlace para CambiarContraseniaAdmin.html -->
+         <a href="CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}" id="cambiarContraseniaLink">Cambiar Contraseña</a>
+         
+         <!-- Enlace para VerProductos.html -->
+         <a href="VerProductos.html?mail=${encodeURIComponent(mail)}" id="verProductosLink">Ver Productos</a>
+         
+         <!-- Enlace para EliminarProducto.html -->
+         <a href="EliminarProducto.html?mail=${encodeURIComponent(mail)}" id="eliminarProductoLink">Eliminar Producto</a>
+         
+           <!-- Enlace para AgregarProducto.html -->
+         <a href="AgregarProducto.html?mail=${encodeURIComponent(mail)}" id="agregarProductoLink">Agregar Producto</a>
+         
+         <!-- Enlace para ModificarPrecio.html -->
+         <a href="ModificarPrecio.html?mail=${encodeURIComponent(mail)}" id="modificarPrecioLink">Modificar Precio</a>
+ 
+          <!-- Enlace para ModificarStock.html -->
+         <a href="ModificarStock.html?mail=${encodeURIComponent(mail)}" id="modificarStockLink">Modificar Stock</a>
+        
+         <!-- Enlace para Cliente.html -->
+         <a href="Clientes.html?mail=${encodeURIComponent(mail)}" id="clientesLink">Clientes</a>
+         
+        <!-- Enlace para Facturas.html -->
+        <a href="Facturas.html?mail=${encodeURIComponent(mail)}" id="facturasLink">Facturas</a>
+
+        <!-- Enlace para Cerrar Sesión -->
+        <a href="Index.html" id="cerrarSesionLink">Cerrar Sesión</a>
+        
+    </div>
+
+    <div class="content">
+        <h2>Listado de Productos</h2>
+        
+        <div id="productosList"></div>
+    </div>
+
+    <script>
+        // Obtener el parámetro 'mail' de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const mail = urlParams.get('mail');
+        console.log("email: ",mail);
+
+        // Función para obtener y mostrar los productos
+        function obtenerProductos() {
+            fetch('http://localhost:8080/tpo/productos')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Construir la lista de productos
+                    const productosList = document.getElementById('productosList');
+                    productosList.innerHTML = ''; // Limpiar contenido anterior
+
+                    data.forEach(producto => {
+                        const productoDiv = document.createElement('div');
+                        productoDiv.classList.add('producto');
+
+                        const imagen = document.createElement('img');
+                        imagen.src = producto.imagen;
+                        imagen.alt = producto.nombre;
+                        productoDiv.appendChild(imagen);
+
+                        const idProducto = document.createElement('p');
+                        idProducto.textContent = `ID: ${producto.id}`;
+                        productoDiv.appendChild(idProducto);
+
+                        const nombre = document.createElement('p');
+                        nombre.innerHTML = `<strong>${producto.nombre}</strong>`;
+                        productoDiv.appendChild(nombre);
+
+                        const precio = document.createElement('p');
+                        precio.textContent = `Precio: $${producto.precio}`;
+                        productoDiv.appendChild(precio);
+
+                        const stock = document.createElement('p');
+                        stock.textContent = `Stock disponible: ${producto.stock}`;
+                        productoDiv.appendChild(stock);
+
+                        productosList.appendChild(productoDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al obtener productos:', error);
+                    alert('Error al obtener productos. Por favor, inténtelo nuevamente.');
+                });
+        }
+
+        // Llamar a la función para obtener los productos al cargar la página
+        obtenerProductos();
+
+        // Manejar clic en el enlace de perfil
+        document.getElementById('perfilLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de perfil admin con el parámetro mail
+            window.location.href = `PerfilAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        // Manejar clic en el enlace de cambiar contraseña
+        document.getElementById('cambiarContraseniaLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de cambiar contraseña con el parámetro mail
+            window.location.href = `CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        // Manejar clic en el enlace de ver productos
+        document.getElementById('verProductosLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de ver productos con el parámetro mail
+            window.location.href = `VerProductos.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        // Manejar clic en el enlace de eliminar producto
+        document.getElementById('eliminarProductoLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de eliminar producto con el parámetro mail
+            window.location.href = `EliminarProducto.html?mail=${encodeURIComponent(mail)}`;
+        });
+        // Manejar clic en el enlace de agregar producto
+        document.getElementById('agregarProductoLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de agregar producto con el parámetro mail
+            window.location.href = `AgregarProducto.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('modificarPrecioLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de agregar producto con el parámetro mail
+            window.location.href = `ModificarPrecio.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('modificarStockLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de agregar producto con el parámetro mail
+            window.location.href = `ModificarStock.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        // Manejar clic en el enlace de Clientes
+        document.getElementById('clientesLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de modificar stock con el parámetro mail
+            window.location.href = `Clientes.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+                
+        // Manejar clic en el enlace de Facturas
+         document.getElementById('facturasLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de modificar stock con el parámetro mail
+            window.location.href = `Facturas.html?mail=${encodeURIComponent(mail)}`;
+        });
+        
+         // Manejar clic en el enlace de cerrar sesión
+         document.getElementById('cerrarSesionLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            // Redirigir a la página de inicio de sesión (Index.html)
+            window.location.href = `Index.html`;
+        });
+        
+    </script>
+</body>
+</html>

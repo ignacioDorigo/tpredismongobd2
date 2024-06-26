@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 200px;
+            background-color: #037bff;
+            color: #fff;
+            padding-top: 40px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            align-items: stretch;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .sidebar a:hover {
+            background-color: #0358a7;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .content h2 {
+            color: #333;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        .content p {
+            color: #000000;
+            margin-bottom: 10px;
+        }
+
+        #clienteInfo {
+            color: #444;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        #clienteInfo p {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="PerfilCliente.html?mail=${encodeURIComponent(mail)}" id="perfilLink">Perfil</a>
+        <a href="CambiarContraseniaCliente.html?mail=${encodeURIComponent(mail)}" id="cambiarContraseniaLink">Cambiar Contraseña</a>
+        <a href="VerMisFacturas.html?mail=${encodeURIComponent(mail)}" id="misComprasLink">Mis Compras</a>
+        <a href="VerCarrito.html?mail=${encodeURIComponent(mail)}" id="verCarritoLink">Ver Carrito</a>
+        <a href="VerProductosCliente.html?mail=${encodeURIComponent(mail)}" id="verProductosLink">Ver Productos</a>
+        <a href="Index.html" id="cerrarSesionLink">Cerrar Sesión</a>
+    </div>
+
+    <div class="content">
+        <h2>Perfil de Cliente</h2>
+        
+        <div id="clienteInfo">
+            <p><strong>Nombre:</strong> <span id="nombre"></span></p>
+            <p><strong>Direccion:</strong> <span id="direccion"></span></p>
+            <p><strong>Documento:</strong> <span id="documento"></span></p>
+            <p><strong>Categoria:</strong> <span id="categoria"></span></p>
+            <p><strong>Email:</strong> <span id="email"></span></p>
+            <p><strong>Password:</strong> <span id="password"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Obtener el parámetro 'mail' de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const mail = urlParams.get('mail');
+        console.log("email: ", mail);
+
+        // Mostrar el mail en el span con id 'email'
+        document.getElementById('email').textContent = mail;
+
+        // Función para obtener y mostrar los datos del cliente
+        function obtenerDatosCliente() {
+            fetch(`http://localhost:8080/tpo/perfilCliente?mail=${encodeURIComponent(mail)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Mostrar los datos del cliente en la página
+                    document.getElementById('nombre').textContent = data.nombre;
+                    document.getElementById('direccion').textContent = data.direccion;
+                    document.getElementById('documento').textContent = data.documento;
+                    document.getElementById('categoria').textContent = data.categoria;
+                    document.getElementById('password').textContent = data.password;
+                })
+                .catch(error => {
+                    console.error('Error al obtener datos del cliente:', error);
+                    alert('Error al obtener datos del cliente. Por favor, inténtelo nuevamente.');
+                });
+        }
+
+        // Llamar a la función para obtener los datos del cliente al cargar la página
+        obtenerDatosCliente();
+
+        document.getElementById('perfilLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `PerfilCliente.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cambiarContraseniaLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `CambiarContraseniaCliente.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('misComprasLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerMisFacturas.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('verCarritoLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerCarrito.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('verProductosLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerProductosCliente.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cerrarSesionLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Index.html`;
+        });
+    </script>
+</body>
+</html>

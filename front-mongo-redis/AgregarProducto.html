@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Producto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0; /* Elimina el margen por defecto del body */
+            padding: 0; /* Elimina el padding por defecto del body */
+            background-color: #ffffff; /* Color de fondo */
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 200px;
+            background-color: #037bff; /* Color de fondo de la barra lateral */
+            color: #fff; /* Color del texto en la barra lateral */
+            padding-top: 40px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            align-items: stretch; /* Hace que los enlaces ocupen todo el ancho disponible */
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 20px; /* Padding para los enlaces */
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            transition: background-color 0.3s ease; /* Transición suave de color de fondo */
+            width: 100%; /* Ancho completo del contenedor */
+            box-sizing: border-box; /* Incluye el padding dentro del ancho total */
+        }
+
+        .sidebar a:hover {
+            background-color: #0358a7; /* Color de fondo al pasar el ratón */
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .content h2 {
+            color: #333; /* Color del título */
+            border-bottom: 2px solid #ccc; /* Línea divisoria bajo el título */
+            padding-bottom: 10px;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 400px;
+            margin: 20px auto; /* Centrar el contenedor */
+        }
+        form label{
+            text-align: start;
+        }
+
+        h2 {
+            color: #333; /* Color del título */
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: calc(100%);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+    
+         <a href="PerfilAdmin.html?mail=${encodeURIComponent(mail)}" id="perfilLink">Perfil</a>
+         <a href="CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}" id="cambiarContraseniaLink">Cambiar Contraseña</a>
+         <a href="VerProductos.html?mail=${encodeURIComponent(mail)}" id="verProductosLink">Ver Productos</a>
+         <a href="AgregarProducto.html?mail=${encodeURIComponent(mail)}" id="agregarProductoLink">Agregar Producto</a>
+         <a href="Clientes.html?mail=${encodeURIComponent(mail)}" id="clientesLink">Clientes</a>
+          <a href="Facturas.html?mail=${encodeURIComponent(mail)}" id="facturasLink">Facturas</a>
+         <a href="Index.html" id="cerrarSesionLink">Cerrar Sesión</a>
+
+    </div>
+
+    <div class="content">
+        <h2>Agregar Producto</h2>
+        
+        <div class="container">
+            <form id="agregarForm">
+                <label for="idProducto">ID del Producto:</label>
+                <input type="number" id="idProducto" name="idProducto" required>
+                
+                <label for="nombreProducto">Nombre del Producto:</label>
+                <input type="text" id="nombreProducto" name="nombreProducto" required>
+                
+                <label for="precioProducto">Precio del Producto:</label>
+                <input type="number" step="0.01" id="precioProducto" name="precioProducto" required>
+                
+                <label for="stockProducto">Stock del Producto:</label>
+                <input type="number" id="stockProducto" name="stockProducto" required>
+                
+                <label for="imagenProducto">URL de la Imagen del Producto:</label>
+                <input type="text" id="imagenProducto" name="imagenProducto" required>
+                
+                <button type="submit">Agregar Producto</button>
+            </form>
+            
+            <p id="mensaje"></p>
+        </div>
+    </div>
+
+    <script>
+        // Obtener el parámetro 'mail' de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const mail = urlParams.get('mail');
+        console.log("email: ", mail);
+
+        // Manejar el envío del formulario para agregar producto
+        document.getElementById('agregarForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Evitar el envío automático del formulario
+            const idProducto = document.getElementById('idProducto').value.trim();
+            const nombreProducto = document.getElementById('nombreProducto').value.trim();
+            const precioProducto = document.getElementById('precioProducto').value.trim();
+            const stockProducto = document.getElementById('stockProducto').value.trim();
+            const imagenProducto = document.getElementById('imagenProducto').value.trim();
+
+            if (!idProducto || !nombreProducto || !precioProducto || !stockProducto || !imagenProducto) {
+                alert('Por favor, completa todos los campos.');
+                return;
+            }
+            agregarProducto(idProducto, nombreProducto, precioProducto, stockProducto, imagenProducto);
+        });
+
+        // Función para agregar producto mediante fetch
+        function agregarProducto(id, nombre, precio, stock, imagen) {
+            fetch(`http://localhost:8080/tpo/crearProducto?id=${id}&nombre=${encodeURIComponent(nombre)}&precio=${precio}&stock=${stock}&imagen=${encodeURIComponent(imagen)}`, {
+                method: 'POST',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // Mostrar mensaje de éxito o redirigir a otra página si es necesario
+                    document.getElementById('mensaje').textContent = 'Producto agregado exitosamente.';
+                    alert('Producto agregado exitosamente.');
+                    setTimeout(() => {
+                        window.location.href = `VerProductos.html?mail=${encodeURIComponent(mail)}`;
+                    }, 2000); // Redirigir a VerProductos.html después de 2 segundos
+                })
+                .catch(error => {
+                    console.error('Error al agregar el producto:', error);
+                    document.getElementById('mensaje').textContent = 'Error al agregar el producto. Por favor, inténtelo nuevamente.';
+                });
+        }
+
+        document.getElementById('perfilLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `PerfilAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cambiarContraseniaLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('verProductosLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerProductos.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('agregarProductoLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `AgregarProducto.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('clientesLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Clientes.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('facturasLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Facturas.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cerrarSesionLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Index.html`;
+        });
+    </script>
+</body>
+</html>

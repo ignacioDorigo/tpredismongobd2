@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Carrito</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 200px;
+            background-color: #037bff;
+            color: #fff;
+            padding-top: 40px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            align-items: stretch;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .sidebar a:hover {
+            background-color: #0358a7;
+        }
+
+        .content {
+            margin-left: 200px;
+            padding: 20px;
+            width: calc(100% - 200px);
+        }
+
+        .content h2 {
+            color: #333;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        .content p {
+            color: #000000;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: .3s ease-in-out;
+            position: relative;
+        }
+        .card:hover {
+            scale: 1.02;
+        }
+
+        .card p {
+            margin: 5px 0;
+        }
+
+        .detalle-producto {
+            border: 2px solid #ccc;
+            margin-top: 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: .3s ease-in-out;
+        }
+
+        .detalle-producto:hover {
+            scale: 1.02;
+        }
+        #botoncito {
+            color: white;
+            background-color: #037bff;
+            width: 10%;
+            padding: 5px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #vaciarCarritoBoton {
+            color: white;
+            background-color: red;
+            width: 15%;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .eliminar-boton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .eliminar-boton:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="PerfilCliente.html?mail=${encodeURIComponent(mail)}" id="perfilLink">Perfil</a>
+        <a href="CambiarContraseniaCliente.html?mail=${encodeURIComponent(mail)}" id="cambiarContraseniaLink">Cambiar Contraseña</a>
+        <a href="VerMisFacturas.html?mail=${encodeURIComponent(mail)}" id="misComprasLink">Mis Compras</a>
+        <a href="VerCarrito.html?mail=${encodeURIComponent(mail)}" id="verCarritoLink">Ver Carrito</a>
+        <a href="VerProductosCliente.html?mail=${encodeURIComponent(mail)}" id="verProductosLink">Ver Productos</a>
+        <a href="Index.html" id="cerrarSesionLink">Cerrar Sesión</a>
+    </div>
+
+    <div class="content">
+        <h2>Mi Carrito</h2>
+        <div id="carritoContainer"></div>
+        <button id="vaciarCarritoBoton" onclick="vaciarCarrito()">Vaciar Carrito</button>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const mail = urlParams.get('mail');
+        console.log("email: ", mail);
+
+        function obtenerCarrito() {
+            fetch(`http://localhost:8080/tpo/verCarritoCliente?mail=${encodeURIComponent(mail)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const carritoContainer = document.getElementById('carritoContainer');
+                    carritoContainer.innerHTML = ''; // Limpiar contenido anterior
+
+                    if (Array.isArray(data) && data.length > 0) {
+                        data.forEach(detalle => {
+                            const card = document.createElement('div');
+                            card.className = 'card';
+                            card.innerHTML = `
+                                <p><strong>Producto:</strong> ${detalle.producto.nombre}</p>
+                                <p><strong>Cantidad:</strong> ${detalle.cantidad}</p>
+                                <p><strong>Precio:</strong> $${detalle.producto.precio}</p>
+                                <p><strong>Subtotal:</strong> $${detalle.producto.precio * detalle.cantidad}</p>
+                                <img src="${detalle.producto.imagen}" alt="${detalle.producto.nombre}" style="width: 100px; height: auto;">
+                                <button class="eliminar-boton" onclick="eliminarProducto(${detalle.producto.id})">X</button>
+                            `;
+                            carritoContainer.appendChild(card);
+                        });
+                    } else {
+                        carritoContainer.innerHTML = '<p>No hay productos en el carrito.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al obtener el carrito:', error);
+                    alert('Error al obtener el carrito. Por favor, inténtelo nuevamente.');
+                });
+        }
+
+        function eliminarProducto(idProducto) {
+            fetch(`http://localhost:8080/tpo/eliminarProductoCarrito?mail=${encodeURIComponent(mail)}&id=${idProducto}`, {
+                method: 'PUT'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    alert(data);
+                    obtenerCarrito(); // Actualizar el carrito después de eliminar el producto
+                })
+                .catch(error => {
+                    console.error('Error al eliminar el producto del carrito:', error);
+                    alert('Error al eliminar el producto del carrito. Por favor, inténtelo nuevamente.');
+                });
+        }
+
+        function vaciarCarrito() {
+            fetch(`http://localhost:8080/tpo/vaciarCarrito?mail=${encodeURIComponent(mail)}`, {
+                method: 'PUT'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    alert(data);
+                    obtenerCarrito(); // Actualizar el carrito después de vaciarlo
+                })
+                .catch(error => {
+                    console.error('Error al vaciar el carrito:', error);
+                    alert('Error al vaciar el carrito. Por favor, inténtelo nuevamente.');
+                });
+        }
+
+        obtenerCarrito();
+
+        document.getElementById('perfilLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `PerfilCliente.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cambiarContraseniaLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `CambiarContraseniaCliente.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('misComprasLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerMisFacturas.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('verCarritoLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerCarrito.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('verProductosLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerProductosCliente.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cerrarSesionLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Index.html`;
+        });
+    </script>
+</body>
+</html>

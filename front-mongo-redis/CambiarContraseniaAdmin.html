@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambiar Contraseña Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 200px;
+            background-color: #037bff; /* Color de fondo de la barra lateral */
+            color: #fff; /* Color del texto en la barra lateral */
+            padding-top: 40px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            align-items: stretch; /* Hace que los enlaces ocupen todo el ancho disponible */
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 0;
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: #0358a7;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        form label {
+            display: block;
+            color: #333;
+        }
+
+        form input[type="text"], form button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        form input[type="text"]:focus {
+            outline: none;
+            border-color: #007BFF;
+        }
+
+        form button {
+            margin-top: 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        
+        <a href="PerfilAdmin.html?mail=${encodeURIComponent(mail)}" id="perfilLink">Perfil</a>
+        <a href="CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}" id="cambiarContraseniaLink">Cambiar Contraseña</a>
+        <a href="VerProductos.html?mail=${encodeURIComponent(mail)}" id="verProductosLink">Ver Productos</a>
+        <a href="AgregarProducto.html?mail=${encodeURIComponent(mail)}" id="agregarProductoLink">Agregar Producto</a>
+        <a href="Clientes.html?mail=${encodeURIComponent(mail)}" id="clientesLink">Clientes</a>
+        <a href="Facturas.html?mail=${encodeURIComponent(mail)}" id="facturasLink">Facturas</a>
+        <a href="Index.html" id="cerrarSesionLink">Cerrar Sesión</a>
+
+    </div>
+
+    <div class="content">
+        <h2>Cambiar Contraseña</h2>
+        <form id="cambiarContraseniaForm">
+            <label for="actual">Contraseña actual:</label>
+            <input type="text" id="actual" name="actual" required>
+            <label for="nueva1">Nueva contraseña:</label>
+            <input type="text" id="nueva1" name="nueva1" required>
+            <label for="nueva2">Repetir nueva contraseña:</label>
+            <input type="text" id="nueva2" name="nueva2" required>
+            <button type="submit">Cambiar Contraseña</button>
+        </form>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const mail = urlParams.get('mail');
+        console.log("email: ",mail);
+
+        document.getElementById('cambiarContraseniaForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const actual = document.getElementById('actual').value;
+            const nueva1 = document.getElementById('nueva1').value;
+            const nueva2 = document.getElementById('nueva2').value;
+
+            if (nueva1 !== nueva2) {
+                alert('Las nuevas contraseñas no coinciden. Por favor, inténtelo nuevamente.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('mail', mail);
+            formData.append('actual', actual);
+            formData.append('nueva1', nueva1);
+            formData.append('nueva2', nueva2);
+
+            const requestOptions = {
+                method: 'PUT',
+                body: formData,
+                redirect: 'follow'
+            };
+
+            fetch(`http://localhost:8080/tpo/cambiarContraseniaAdmin`, requestOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(result => {
+                    alert(result);
+                })
+                .catch(error => {
+                    console.error('Error al procesar la solicitud:', error);
+                    alert('Error al cambiar la contraseña. Por favor, inténtelo nuevamente.');
+                });
+        });
+
+        document.getElementById('perfilLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `PerfilAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cambiarContraseniaLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('verProductosLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerProductos.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('agregarProductoLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `AgregarProducto.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('clientesLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Clientes.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('facturasLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Facturas.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cerrarSesionLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Index.html`;
+        });
+        
+    </script>
+</body>
+</html>

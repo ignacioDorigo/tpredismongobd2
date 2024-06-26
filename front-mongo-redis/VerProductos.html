@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Productos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0; /* Elimina el margen por defecto del body */
+            padding: 0; /* Elimina el padding por defecto del body */
+            background-color: #ffffff; /* Color de fondo */
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 200px;
+            background-color: #037bff; /* Color de fondo de la barra lateral */
+            color: #fff; /* Color del texto en la barra lateral */
+            padding-top: 40px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            align-items: stretch; /* Hace que los enlaces ocupen todo el ancho disponible */
+            position: fixed; /* Fija la barra lateral */
+            top: 0; /* La fija en la parte superior */
+            left: 0; /* Alinea a la izquierda */
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 20px; /* Padding para los enlaces */
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            transition: background-color 0.3s ease; /* Transición suave de color de fondo */
+            width: 100%; /* Ancho completo del contenedor */
+            box-sizing: border-box; /* Incluye el padding dentro del ancho total */
+        }
+
+        .sidebar a:hover {
+            background-color: #0358a7; /* Color de fondo al pasar el ratón */
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            margin-left: 200px; /* Ajusta el margen izquierdo para evitar solapamientos con la sidebar fija */
+            overflow-y: auto; /* Permite el scroll vertical en la zona de contenido */
+        }
+
+        .content h2 {
+            color: #333; /* Color del título */
+            border-bottom: 2px solid #ccc; /* Línea divisoria bajo el título */
+            padding-bottom: 10px;
+        }
+
+        .content p {
+            color: #000000; /* Color del texto */
+            margin-bottom: 10px;
+        }
+
+        .producto {
+            width: 100%; /* Ancho máximo del contenedor */
+            max-width: 350px; /* Ancho máximo del producto */
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: .3s ease-in-out;
+            cursor: pointer;
+            position: relative; /* Permite posicionar elementos hijos relativamente */
+        }
+
+        .producto:hover {
+            transform: scale(1.04); /* Aumenta ligeramente el tamaño al pasar el ratón */
+        }
+
+        .producto img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .boton-eliminar {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #ff3333;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .boton-eliminar:hover {
+            background-color: #cc0000;
+        }
+
+        .boton-editar-stock {
+            background-color: #4CAF50; /* Color de fondo */
+            color: white; /* Color del texto */
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .boton-editar-stock:hover {
+            background-color: #45a049; /* Cambio de color al pasar el ratón */
+        }
+
+        .boton-actualizar-precio {
+            background-color: #f39c12; /* Color de fondo */
+            color: white; /* Color del texto */
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .boton-actualizar-precio:hover {
+            background-color: #e67e22; /* Cambio de color al pasar el ratón */
+        }
+        #productosList{
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <!-- Enlaces de la barra lateral -->
+        <a href="PerfilAdmin.html?mail=${encodeURIComponent(mail)}" id="perfilLink">Perfil</a>
+        <a href="CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}" id="cambiarContraseniaLink">Cambiar Contraseña</a>
+        <a href="VerProductos.html?mail=${encodeURIComponent(mail)}" id="verProductosLink">Ver Productos</a>
+        <a href="AgregarProducto.html?mail=${encodeURIComponent(mail)}" id="agregarProductoLink">Agregar Producto</a>
+        <a href="Clientes.html?mail=${encodeURIComponent(mail)}" id="clientesLink">Clientes</a>
+         <a href="Facturas.html?mail=${encodeURIComponent(mail)}" id="facturasLink">Facturas</a>
+        <a href="Index.html" id="cerrarSesionLink">Cerrar Sesión</a>
+    </div>
+
+    <div class="content">
+        <h2>Listado de Productos</h2>
+        <div id="productosList"></div>
+    </div>
+
+    <script>
+        // Obtener el parámetro 'mail' de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const mail = urlParams.get('mail');
+        console.log("email: ", mail);
+
+        // Función para obtener y mostrar los productos
+        function obtenerProductos() {
+            fetch('http://localhost:8080/tpo/productos')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const productosList = document.getElementById('productosList');
+                    productosList.innerHTML = ''; // Limpiar contenido anterior
+
+                    data.forEach(producto => {
+                        const productoDiv = document.createElement('div');
+                        productoDiv.classList.add('producto');
+
+                        const imagen = document.createElement('img');
+                        imagen.src = producto.imagen;
+                        imagen.alt = producto.nombre;
+                        productoDiv.appendChild(imagen);
+
+                        const idProducto = document.createElement('p');
+                        idProducto.textContent = `ID: ${producto.id}`;
+                        productoDiv.appendChild(idProducto);
+
+                        const nombre = document.createElement('p');
+                        nombre.innerHTML = `<strong>${producto.nombre}</strong>`;
+                        productoDiv.appendChild(nombre);
+
+                        const precio = document.createElement('p');
+                        precio.textContent = `Precio: $${producto.precio}`;
+                        productoDiv.appendChild(precio);
+
+                        const stock = document.createElement('p');
+                        stock.textContent = `Stock disponible: ${producto.stock}`;
+                        productoDiv.appendChild(stock);
+
+                        const botonEliminar = document.createElement('button');
+                        botonEliminar.textContent = 'X';
+                        botonEliminar.classList.add('boton-eliminar');
+
+                        // Manejar clic en el botón de eliminar
+                        botonEliminar.addEventListener('click', function(event) {
+                            event.stopPropagation(); // Detener la propagación del evento
+                            eliminarProducto(producto.id);
+                            botonEliminar.disabled = true; // Deshabilitar el botón después de hacer clic
+                        });
+
+                        productoDiv.appendChild(botonEliminar);
+
+                        const botonEditarStock = document.createElement('button');
+                        botonEditarStock.textContent = 'Editar Stock';
+                        botonEditarStock.classList.add('boton-editar-stock');
+
+                        // Manejar clic en el botón de editar stock
+                        botonEditarStock.addEventListener('click', function(event) {
+                            event.stopPropagation(); // Detener la propagación del evento
+
+                            // Prompt para ingresar nuevo stock
+                            const nuevoStock = prompt('Ingrese el nuevo stock:');
+                            if (nuevoStock !== null) {
+                                actualizarStock(producto.id, nuevoStock);
+                            }
+                        });
+
+                        productoDiv.appendChild(botonEditarStock);
+
+                        const botonActualizarPrecio = document.createElement('button');
+                        botonActualizarPrecio.textContent = 'Actualizar Precio';
+                        botonActualizarPrecio.classList.add('boton-actualizar-precio');
+
+                        // Manejar clic en el botón de actualizar precio
+                        botonActualizarPrecio.addEventListener('click', function(event) {
+                            event.stopPropagation(); // Detener la propagación del evento
+
+                            // Prompt para ingresar nuevo precio
+                            const nuevoPrecio = prompt('Ingrese el nuevo precio:');
+                            if (nuevoPrecio !== null) {
+                                actualizarPrecio(producto.id, nuevoPrecio);
+                            }
+                        });
+
+                        productoDiv.appendChild(botonActualizarPrecio);
+
+                        productosList.appendChild(productoDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al obtener productos:', error);
+                    alert('Error al obtener productos. Por favor, inténtelo nuevamente.');
+                });
+        }
+
+        // Función para eliminar un producto
+        function eliminarProducto(idProducto) {
+            fetch(`http://localhost:8080/tpo/eliminarProducto?id=${idProducto}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al eliminar el producto');
+                }
+                console.log('Producto eliminado exitosamente');
+                obtenerProductos(); // Volver a cargar la lista de productos después de eliminar uno
+            })
+            .catch(error => {
+                console.error('Error al intentar eliminar el producto:', error);
+                alert('Error al eliminar el producto. Por favor, inténtelo nuevamente.');
+            });
+        }
+
+        // Función para actualizar el stock del producto
+        function actualizarStock(idProducto, nuevoStock) {
+            fetch(`http://localhost:8080/tpo/actualizarStock?id=${idProducto}&stockNuevo=${nuevoStock}`, {
+                method: 'PUT'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al actualizar el stock');
+                }
+                console.log('Stock actualizado exitosamente');
+                obtenerProductos(); // Volver a cargar la lista de productos después de actualizar el stock
+            })
+            .catch(error => {
+                console.error('Error al intentar actualizar el stock:', error);
+                alert('Error al actualizar el stock. Por favor, inténtelo nuevamente.');
+            });
+        }
+
+        // Función para actualizar el precio del producto
+        function actualizarPrecio(idProducto, nuevoPrecio) {
+            fetch(`http://localhost:8080/tpo/actualizarPrecio?id=${idProducto}&precioNuevo=${nuevoPrecio}`, {
+                method: 'PUT'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al actualizar el precio');
+                }
+                console.log('Precio actualizado exitosamente');
+                obtenerProductos(); // Volver a cargar la lista de productos después de actualizar el precio
+            })
+            .catch(error => {
+                console.error('Error al intentar actualizar el precio:', error);
+                alert('Error al actualizar el precio. Por favor, inténtelo nuevamente.');
+            });
+        }
+
+        // Llamar a la función para obtener los productos al cargar la página
+        obtenerProductos();
+
+        document.getElementById('perfilLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `PerfilAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cambiarContraseniaLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `CambiarContraseniaAdmin.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('verProductosLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `VerProductos.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('agregarProductoLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `AgregarProducto.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('clientesLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Clientes.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('facturasLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Facturas.html?mail=${encodeURIComponent(mail)}`;
+        });
+
+        document.getElementById('cerrarSesionLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = `Index.html`;
+        });
+    </script>
+</body>
+</html>
